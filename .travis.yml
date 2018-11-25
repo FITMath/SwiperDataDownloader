@@ -16,9 +16,18 @@ addons:
     packages:
       - curl
       
+# Multiple lines can be made a single "virtual line" because of the way that
+# Travis munges each line before executing it to print out the exit status.
+# It's okay for it to be on multiple physical lines, so long as you remember:
+# - There can't be any leading "-"s - All newlines will be removed, so use
+# ";"s
 install:
   - if [[ ${TRAVIS_OS_NAME} == 'osx' ]] ; then python --version ; fi
   - if [[ ${TRAVIS_OS_NAME} == 'osx' ]] ; then brew link --force --overwrite curl ; fi
+  - if [[ ${TRAVIS_OS_NAME} == 'linux' ]] ; then echo "Installing Julia v1-latest" && mkdir -p ${TRAVIS_HOME}/julia ; fi
+  - if [[ ${TRAVIS_OS_NAME} == 'linux' ]] ; then export CURL_USER_AGENT="Travis-CI $(curl --version | head -n 1)" ; fi
+  - if [[ ${TRAVIS_OS_NAME} == 'linux' ]] ; then curl -A "$CURL_USER_AGENT" -s -L --retry 7 'https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0-latest-linux-x86_64.tar.gz' | tar -C ~/julia -x -z --strip-components=1 -f - ; fi
+  - if [[ ${TRAVIS_OS_NAME} == 'linux' ]] ; then export PATH="${PATH}:${TRAVIS_HOME}/julia/bin" ; fi
 
 script:
   # Show usage message
@@ -28,3 +37,5 @@ script:
   - ./cas-get.sh https://access.fit.edu ${FITAPIUsername} || true
   # Return from access.fit.edu has at least 100 lines.
   - test `./cas-get.sh https://access.fit.edu ${FITAPIUsername} ${FITAPIPassword} | wc -l` -gt 100
+  - if [[ ${TRAVIS_OS_NAME} == 'linux' ]] ; then julia batch-output-swipes.jl ; fi
+  - if [[ ${TRAVIS_OS_NAME} == 'linux' ]] ; then julia batch-output-swipes.jl command=detail "" "" "" --dry-run ; fi
