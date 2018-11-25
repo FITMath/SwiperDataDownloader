@@ -1,0 +1,30 @@
+language: python
+
+matrix:
+  include:
+    - os: linux
+      python: '2.7'
+    - os: linux
+      python: '3.3'
+    - os: linux
+      python: pypy
+    - os: osx
+      language: generic
+
+addons:
+  homebrew:
+    packages:
+      - curl
+      
+install:
+  - if [[ ${TRAVIS_OS_NAME} == 'osx' ]] ; then python --version ; fi
+  - if [[ ${TRAVIS_OS_NAME} == 'osx' ]] ; then brew link --force --overwrite curl ; fi
+
+script:
+  # Show usage message
+  - ./cas-get.sh || true
+  # Username and Password Required.
+  - ./cas-get.sh https://access.fit.edu || true
+  - ./cas-get.sh https://access.fit.edu ${FITAPIUsername} || true
+  # Return from access.fit.edu has at least 100 lines.
+  - test `./cas-get.sh https://access.fit.edu ${FITAPIUsername} ${FITAPIPassword} | wc -l` -gt 100
