@@ -6,7 +6,7 @@ else
 end
 
 const casGetScript = joinpath(@__DIR__, "cas-get.sh")
-const baseURL = "https://apps2.fit.edu/reports"
+const baseURL = "https://apps2.fit.edu/swiper/reports"
 
 # Vector of usage messages
 const usageMessages = Vector{String}()
@@ -41,7 +41,12 @@ function getDateOrDefault(value, defaultValue)
 	if isempty(value)
 		return defaultValue
 	else
-		return Dates.DateTime(value, urlDateFormat)
+		try
+			return Dates.DateTime(value, urlDateFormat)
+		catch e
+			@warn "Failed to parse DateTime $(value)"
+			return defaultValue
+		end
 	end
 end
 
