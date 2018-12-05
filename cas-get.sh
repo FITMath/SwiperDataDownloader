@@ -78,17 +78,10 @@ fi
 #Visit the URL with the ticket param to finally set the casprivacy and, more importantly,
 # MOD_AUTH_CAS cookie. Now we've got a MOD_AUTH_CAS cookie, anything we do in this session
 # will pass straight through CAS.
-# Note that (apparently) newlines are not removed appropriately here, requiring
-# tr to remove any \r
-if [[ "$OSTYPE" == "darwin"* ]]; then
-	#Linux may not need this line but my response from the previous call has retrieving
-	# windows-style linebreaks in OSX
-	CURL_DEST=`grep Location ${HEADER_DUMP_DEST} | sed 's/Location: //' | tr -d '\r' | tr -d '\15\32'`
-elif [[ "$OSTYPE" == "linux-gnu" ]] ; then
-	CURL_DEST=`grep Location ${HEADER_DUMP_DEST} | sed 's/Location: //' | tr -d '\r'`
-fi
 
-# echo "CURL DEST: " $CURL_DEST
+#echo "HEADER_DUMP_DEST: " $(grep Location ${HEADER_DUMP_DEST})
+CURL_DEST=$(grep Location ${HEADER_DUMP_DEST} | sed 's/Location:\s*//' | tr -d '[[:space:]]')
+#echo "CURL DEST: " ${CURL_DEST}
 
 if [[ -z "$CURL_DEST" ]]; then
     echo "Cannot login. Check if you can login in a browser using the configured user/password"
