@@ -90,10 +90,16 @@ function mainSummary(
 		
 	# Get script input from command line arguments
 	# Context has to be passed to API escaped
-	ContextEncoded = replace(Context, " " => "+")
+	ContextEncoded = if isempty(Context)
+		""
+	else
+		string("&context[]=", replace(Context, " " => "+"))
+	end
 
 	# If we don't have enough information, return
 	if isempty(username) || isempty(pword)
+		@info "Ensure that the environment variables FITAPIUsername and"
+		@info " FITAPIPassword are set correctly."
 		return 1
 	end
 
@@ -112,9 +118,9 @@ function mainSummary(
 	# Form URL for submission
 	basePage = summaryPage ? "summary" : "detail"
 	URL=string(	baseURL, "/", basePage,
-				"?starting_date=$(sinceUrl)&starting_date_submit=$(sinceSubmit)",
-				"&ending_date=$(untilUrl)&ending_date_submit=$(untilSubmit)",
-				"&context[]=$(ContextEncoded)&action=Download+as+CSV")
+				"?starting_date=$(sinceUrl)&starting_date_submit=", sinceSubmit,
+				"&ending_date=$(untilUrl)&ending_date_submit=", untilSubmit,
+				ContextEncoded, "&action=Download+as+CSV")
 	@info "URL Requested: $(URL)"
 
 	# Form command line call to casGetScript
