@@ -134,8 +134,6 @@ function mainSummary(
 	
 	cmdOut = IOBuffer(readchomp(pipeline(casCmd, stderr=stderr)))
 
-	@show cmdOut
-
 	# Parse output as a CSV file
 	parsedCmdOut = readdlm(cmdOut, ',', String, '\n', quotes = true)
 	nr, nc = size(parsedCmdOut)
