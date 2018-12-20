@@ -2,7 +2,33 @@
 
 [![Build Status](https://travis-ci.org/FITMath/SwiperDataDownloader.svg?branch=master)](https://travis-ci.org/FITMath/SwiperDataDownloader)
 
-Scripts for automatically downloading and combining swipe data.
+Scripts for automatically downloading and combining swipe (attendance) data.
+
+## Swiper Data
+
+The output from our attendance system is a CSV file with header
+```
+"FIT ID", "TRACKS", "First Name", "Last Name", "Email", "Class", "Context", "Time In", "Time Out", "Total Time"
+```
+
+### Anonymizing
+For some purposes (i.e. tracking attendance to a particular course) we need all of the fields, but for nearly all reporting, anonymized data works just fine.
+On any system with a `cut` command (including most Linux or OSX installations), we can easily anonymize data in a file `example.csv` using the one-liner
+
+```
+cut -f 6- -d "," -s example.csv
+```
+
+### Combining
+
+Since the downloaded data files represent disjoint time ranges by default, we don't need to do anything fancy to combine two example files `example1.csv` and `example2.csv`:
+
+```
+cat example1.csv <(tail-n +1 example2.csv)
+```
+
+The last command can be repeated any number of times necessary in order to concatenate more files.
+Given the relatively small size of the corresponding data files, there's no harm in creating temporary aggregations of multiple files locally before further processing.
 
 ## Example Automated Download/Backup
 
@@ -21,8 +47,8 @@ The calls shelling out to `date` allow us to request dates between last Friday a
 
 # Usage message
 usage() {
-	echo "usage: $0 script_args"
-	echo " Download the SwiperDataDownloader package, run a backup script, and cleanup after ourselves."
+    echo "usage: $0 script_args"
+    echo " Download the SwiperDataDownloader package, run a backup script, and cleanup after ourselves."
 }
 
 ReportOutputDir=...
@@ -35,7 +61,7 @@ GITREPODEST=./SwiperDataDownloader
 
 # Cleanup function
 cleanup_git() {
-	rm -rf ${GITREPODEST}
+    rm -rf ${GITREPODEST}
 }
 # Cleanup on exit
 trap cleanup_git EXIT
@@ -91,7 +117,7 @@ The core script automating the authentication with CAS and subsequent data downl
 
 to see usage information.
 
-You should be able to, for instance, download the page `access.fit.edu` by running 
+You should be able to, for instance, download the page `access.fit.edu` by running
 ```
 ./cas-get.sh https://access.fit.edu username password
 ```
