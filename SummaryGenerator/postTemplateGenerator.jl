@@ -26,9 +26,9 @@ const fileDescriptions = open(fileIn, "r") do st
     deserialize(st)
 end
 
-# Emit image in markdown format.
+# Emit image in Hugo format
 function imageStr(pathToImage, altText = "")
-    string("![", altText, "](", pathToImage, ")")
+    string("{{< figure src=", '"', pathToImage, '"', " caption=", '"', altText, '"', " >}}")
 end
 
 
@@ -46,24 +46,28 @@ title: "$(title)"
 description: ""
 draft: false
 date: "$(Dates.now())"
----""")
+---
+
+## Notable Events
+
+## Activity Statistics and Plots
+
+""")
     if "TotalStats.txt" in filesInDir
         println(readchomp(joinpath(dirIn, "TotalStats.txt")))
         delete!(desc, "TotalStats.txt")
     end
 
+    println("Click an image for a larger version.\n",
+            "\n",
+            "{{< gallery >}}")
+
     for file in filter(isImg, filesInDir)
         fdesc = haskey(desc, file) ? desc[file] : ""
-        println("\n",
-                imageStr(
-                    file,
-                    fdesc
-                ),
-                "\n\n",
-                fdesc
-                )
+        println(imageStr(file, fdesc))
     end
 
+    println("{{< /gallery >}}")
 end
 
 const title = length(ARGS) >= 2 ? ARGS[2] : "MAC Activity, File in $(dirname(fileIn))"
