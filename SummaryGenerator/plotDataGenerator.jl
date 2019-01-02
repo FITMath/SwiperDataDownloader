@@ -113,7 +113,11 @@ function combineGraphicsData(d1, d2)
     busyHoursData = d1[2] .+ d2[2]
     busyDaysData = d1[3] .+ d2[3]
     totalDailyTutoringTime = d1[4] .+ d2[4]
-    reasonForVisit = merge(+, d1[5], d2[5]) # Combine dicts and add values with the same key
+    # d{1,2}[{5,6}] are dictionaries with integer values and (hopefully)
+    # identical keys. The `merge` method on dicts enables exactly the combination
+    # or reduction process we're trying to implement.
+    # The methods below combine the dicts and add values with the same key
+    reasonForVisit = merge(+, d1[5], d2[5])
     reasonForVisitClass = merge(+, d1[6], d2[6])
 
     return (visitorIDs,
@@ -130,7 +134,7 @@ function extractGraphicsData(filesIn::Vector{String})
         return extractGraphicsData(first(filesIn))
     end
 
-    # We can assume each fileIn exists...
+    # We can assume each fileIn exists, based on command-line parsing above.
     return mapreduce(extractGraphicsData, combineGraphicsData, filesIn)
 end
 
@@ -140,12 +144,14 @@ using Measures
 using Serialization
 
 function createGraphics(fileIn, dirOut)
-    (visitorIDs,
-     busyHoursData,
-     busyDaysData,
-     totalDailyTutoringTime,
-     reasonForVisit,
-     reasonForVisitClass) = extractGraphicsData(fileIn)
+    (
+        visitorIDs,
+        busyHoursData,
+        busyDaysData,
+        totalDailyTutoringTime,
+        reasonForVisit,
+        reasonForVisitClass
+    ) = extractGraphicsData(fileIn)
 
     outputFileDescriptions = Dict{String, String}()
 

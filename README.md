@@ -29,6 +29,7 @@ cat example1.csv <(tail-n +1 example2.csv)
 
 The last command can be repeated any number of times necessary in order to concatenate more files.
 Given the relatively small size of the corresponding data files, there's no harm in creating temporary aggregations of multiple files locally before further processing.
+Alternatively, one can load all of the CSV files and process them at once; the [`SummaryGenerator`](../blob/master/SummaryGenerator) project and the [corresponding blog post](https://jgoldfar.github.io/blog/operationalizing-attendance-reports) exemplify this method.
 
 ## Example Automated Download/Backup
 
@@ -74,6 +75,10 @@ mkdir -p ${ReportOutputDir}
 
 cd ${GITREPODEST} && ${JuliaPath} batch-output-swipes.jl command=Detail "" $(date --date='last Friday -1 week' +%m/%d/%Y) $(date --date='last Friday' +%m/%d/%Y) > ${ReportOutputDir}/all-$(date --date='last Friday' +%m-%d-%Y).csv && cd ..
 ```
+
+## SummaryGenerator
+
+See [the README](../blob/master/SummaryGenerator/README) for more information.
 
 ## batch-output-swipes.jl
 
