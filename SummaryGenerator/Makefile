@@ -5,7 +5,7 @@ DATADIR?=.
 JULIA?=$(shell which julia)
 
 usage:
-	@echo "Usage: make -f path/to/Makefile [instantiate | OUTPUTFILE] VAR=VALUE..."
+	@echo "Usage: make -f path/to/Makefile [OUTPUTFILE] VAR=VALUE..."
 	@echo ""
 	@echo "Recognized variables (VAR):"
 	@echo "   OUTPUTDIR: Base output directory."
@@ -19,11 +19,11 @@ usage:
 	@echo "   OUTPUTDIR/.../_index.md: create index/listing file corresponding to"
 	@echo "       OUTPUTDIR/.../fileDescriptions.jldat."
 
-instantiate: Project.toml
+Manifest.toml: Project.toml
 	$(JULIA) --project=. -e 'using Pkg; Pkg.instantiate()'
 
-$(OUTPUTDIR)/%/fileDescriptions.jldat: plotDataGenerator.jl $(DATADIR)/all-%.csv
-	$(JULIA) --project=. $^ $(dir $@)
+$(OUTPUTDIR)/%/fileDescriptions.jldat: plotDataGenerator.jl $(DATADIR)/all-%.csv Manifest.toml
+	$(JULIA) --project=. $< $(dir $@) $(DATADIR)/all-$*.csv
 
 $(OUTPUTDIR)/%/_index.md: postTemplateGenerator.jl $(OUTPUTDIR)/%/fileDescriptions.jldat
-	$(JULIA) --project=. $^
+	$(JULIA) --project=. $^ > $@
