@@ -1,7 +1,7 @@
 function usage()
-    println(stderr, "Usage: julia --project=. $(basename(@__FILE__)) path/to/dataFile.csv path/to/output [options]\n",
-            "path/to/output should not exist before running the script, and the dataFile is\n",
-            "assumed to be in the correct format.\n",
+    println(stderr, "Usage: julia --project=. $(basename(@__FILE__)) path/to/output path/to/dataFile1.csv [path/to/dataFile2.csv...] [options]\n",
+            "path/to/output should not exist before running the script, and the dataFile(s)\n",
+            "are assumed to be in the correct format.\n",
             "The only option currently implemented is `--force`, which will overwrite files in\n",
             "the output directory.\n",
             "You may need to run julia --project=. -e 'using Pkg; Pkg.instantiate()' before\n",
@@ -14,21 +14,22 @@ if length(ARGS) < 2
     exit(-1)
 end
 
-const fileIn = ARGS[1]
-
-if !isfile(fileIn)
-    @error "Input file $(fileIn) not found."
-    exit(-1)
-end
-
-const dirOut = ARGS[2]
+const dirOut = popfirst!(ARGS)
 const useForce = "--force" in ARGS
+const restARGS = filter(arg -> arg != "--force", ARGS)
 if isdir(dirOut) && !useForce
     @error "Output directory $(dirOut) exists."
     exit(-1)
 end
 
 mkpath(dirOut)
+const filesIn = filter(isfile, restARGS)
+if isempty(filesIn)
+    @error "No input files found."
+    exit(-1)
+end
+@info "Generating graphics using aggregated statistics from $(filesIn)"
+
 # End "Main"
 
 # Begin core functionality
@@ -37,12 +38,13 @@ using CSV
 
 # Define the date format for attendance data:
 const fileDF = dateformat"Y-m-d H:M:S"
-function extractGraphicsData(fileIn)
+function extractGraphicsData(fileIn::String)
     # For old data, we may have "junk" in the first line.
     headerRow = startswith(readline(fileIn), "cmdOut") ? 2 : 1
 
     f = CSV.File(fileIn, header=headerRow, normalizenames=true, dateformat=fileDF, types=Dict(8 => Union{Missing, DateTime}, 9 => Union{Missing, DateTime}))
 
+    #TODO: Only collect visitor IDs when possible (i.e. don't _require_ deanonymized data.)
     visitorIDs = Set{String}()
     busyHoursData = zeros(Int64, 23)
     busyDaysData = zeros(Int64, 7)
@@ -104,6 +106,32 @@ function extractGraphicsData(fileIn)
             reasonForVisit,
             reasonForVisitClass
             )
+end
+
+function combineGraphicsData(d1, d2)
+    visitorIDs = union(d1[1], d2[1])
+    busyHoursData = d1[2] .+ d2[2]
+    busyDaysData = d1[3] .+ d2[3]
+    totalDailyTutoringTime = d1[4] .+ d2[4]
+    reasonForVisit = merge(+, d1[5], d2[5]) # Combine dicts and add values with the same key
+    reasonForVisitClass = merge(+, d1[6], d2[6])
+
+    return (visitorIDs,
+            busyHoursData,
+            busyDaysData,
+            totalDailyTutoringTime,
+            reasonForVisit,
+            reasonForVisitClass
+            )
+end
+
+function extractGraphicsData(filesIn::Vector{String})
+    if length(filesIn) == 1
+        return extractGraphicsData(first(filesIn))
+    end
+
+    # We can assume each fileIn exists...
+    return mapreduce(extractGraphicsData, combineGraphicsData, filesIn)
 end
 
 using Printf
@@ -177,5 +205,6 @@ function createGraphics(fileIn, dirOut)
 end
 # End "Core" functionality, and finally call createGraphics
 
-const descOut = createGraphics(fileIn, dirOut)
+
+const descOut = createGraphics(filesIn, dirOut)
 println(stderr, "File descriptions/titles written on $(descOut)")
