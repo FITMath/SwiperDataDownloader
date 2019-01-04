@@ -1,8 +1,9 @@
-@static if VERSION >= v"0.6-"
+@static if VERSION >= v"0.7-"
 	import Dates
 	using DelimitedFiles
 else
 	import Base.Dates
+	using Compat: @warn, @info, stderr
 end
 
 const casGetScript = joinpath(@__DIR__, "cas-get.sh")
@@ -98,8 +99,8 @@ function mainSummary(
 
 	# If we don't have enough information, return
 	if isempty(username) || isempty(pword)
-		@info "Ensure that the environment variables FITAPIUsername and"
-		@info " FITAPIPassword are set correctly."
+		@warn "Ensure that the environment variables FITAPIUsername and"
+		@warn " FITAPIPassword are set correctly."
 		return 1
 	end
 
