@@ -22,6 +22,10 @@ To run this report automatically every Saturday, add the following to your [cron
 
 See [the README](../blob/master/SummaryGenerator/README) for more information.
 
+## HeatMapGenerator
+
+See [the README](../blob/master/HeatMapGenerator/README) for more information.
+
 ## batch-output-swipes.jl
 
 The Julia script `batch-output-swipes.jl` is a simple wrapper for the CAS interface script
