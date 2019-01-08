@@ -32,17 +32,10 @@ end
 
 # End "Main"
 
-# Begin core functionality
-using Dates
-using CSV
+include(joinpath(@__DIR__, "..", "swipeDataUtils.jl"))
 
-# Define the date format for attendance data:
-const fileDF = dateformat"Y-m-d H:M:S"
 function extractGraphicsData(fileIn::String)
-    # For old data, we may have "junk" in the first line.
-    headerRow = startswith(readline(fileIn), "cmdOut") ? 2 : 1
-
-    f = CSV.File(fileIn, header=headerRow, normalizenames=true, dateformat=fileDF, types=Dict(8 => Union{Missing, DateTime}, 9 => Union{Missing, DateTime}))
+    f = parseDetailData(fileIn)
 
     #TODO: Only collect visitor IDs when possible (i.e. don't _require_ deanonymized data.)
     visitorIDs = Set{String}()
