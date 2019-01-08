@@ -16,7 +16,7 @@ usage:
 	@echo "   heatMap: Generate the heat map from data in DATAFILE $(DATAFILE)."
 
 Manifest.toml: Project.toml
-	$(JULIA) --project=. -e 'using Pkg; Pkg.instantiate()'
+	PYTHON="$(shell which python)" $(JULIA) --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.build("PyCall")'
 
 # Make sure that ${DATAFILE} exists and the script exits correctly,
 # otherwise, give the usage information.
